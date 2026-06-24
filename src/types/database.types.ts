@@ -40,6 +40,7 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
+        Relationships: []
       }
       body_stats: {
         Row: {
@@ -75,6 +76,7 @@ export interface Database {
           measured_at?: string
           created_at?: string
         }
+        Relationships: []
       }
       fitness_goals: {
         Row: {
@@ -122,6 +124,7 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
+        Relationships: []
       }
       food_items: {
         Row: {
@@ -187,6 +190,7 @@ export interface Database {
           image_url?: string | null
           created_at?: string
         }
+        Relationships: []
       }
       food_logs: {
         Row: {
@@ -246,6 +250,7 @@ export interface Database {
           logged_at?: string
           created_at?: string
         }
+        Relationships: []
       }
       food_images: {
         Row: {
@@ -272,6 +277,7 @@ export interface Database {
           storage_path?: string
           uploaded_at?: string
         }
+        Relationships: []
       }
     }
     Views: {

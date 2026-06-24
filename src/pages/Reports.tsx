@@ -1,13 +1,33 @@
-import { useEffect, useState } from 'react';
-import { useAuth } from '../contexts/AuthContext';
-import { supabase } from '../lib/supabase';
-import { FoodLog } from '../types';
-import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, eachDayOfInterval, subWeeks, subMonths } from 'date-fns';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { useEffect, useState } from "react";
+import { useAuth } from "../contexts/AuthContext";
+import { supabase } from "../lib/supabase";
+import type { FoodLog } from "../types";
+import {
+  format,
+  startOfWeek,
+  endOfWeek,
+  startOfMonth,
+  endOfMonth,
+  eachDayOfInterval,
+  subWeeks,
+  subMonths,
+} from "date-fns";
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 
 export default function Reports() {
   const { user, profile } = useAuth();
-  const [view, setView] = useState<'week' | 'month'>('week');
+  const [view, setView] = useState<"week" | "month">("week");
   const [weeklyData, setWeeklyData] = useState<any[]>([]);
   const [monthlyData, setMonthlyData] = useState<any[]>([]);
   const [weeklyStats, setWeeklyStats] = useState({
@@ -43,22 +63,22 @@ export default function Reports() {
       const weekEnd = endOfWeek(now);
 
       const { data: weekLogs } = await supabase
-        .from('food_logs')
-        .select('*')
-        .eq('user_id', user.id)
-        .gte('logged_at', weekStart.toISOString())
-        .lte('logged_at', weekEnd.toISOString());
+        .from("food_logs")
+        .select("*")
+        .eq("user_id", user.id)
+        .gte("logged_at", weekStart.toISOString())
+        .lte("logged_at", weekEnd.toISOString());
 
       // Fetch last 30 days
       const monthStart = startOfMonth(now);
       const monthEnd = endOfMonth(now);
 
       const { data: monthLogs } = await supabase
-        .from('food_logs')
-        .select('*')
-        .eq('user_id', user.id)
-        .gte('logged_at', monthStart.toISOString())
-        .lte('logged_at', monthEnd.toISOString());
+        .from("food_logs")
+        .select("*")
+        .eq("user_id", user.id)
+        .gte("logged_at", monthStart.toISOString())
+        .lte("logged_at", monthEnd.toISOString());
 
       if (weekLogs) {
         processWeeklyData(weekLogs, weekStart, weekEnd);
@@ -68,7 +88,7 @@ export default function Reports() {
         processMonthlyData(monthLogs, monthStart, monthEnd);
       }
     } catch (error) {
-      console.error('Error fetching reports:', error);
+      console.error("Error fetching reports:", error);
     } finally {
       setLoading(false);
     }
@@ -79,16 +99,19 @@ export default function Reports() {
     const dailyData = days.map((day) => {
       const dayLogs = logs.filter((log) => {
         const logDate = new Date(log.logged_at);
-        return format(logDate, 'yyyy-MM-dd') === format(day, 'yyyy-MM-dd');
+        return format(logDate, "yyyy-MM-dd") === format(day, "yyyy-MM-dd");
       });
 
-      const calories = dayLogs.reduce((sum, log) => sum + (log.calories || 0), 0);
+      const calories = dayLogs.reduce(
+        (sum, log) => sum + (log.calories || 0),
+        0,
+      );
       const protein = dayLogs.reduce((sum, log) => sum + (log.protein || 0), 0);
       const carbs = dayLogs.reduce((sum, log) => sum + (log.carbs || 0), 0);
       const fats = dayLogs.reduce((sum, log) => sum + (log.fats || 0), 0);
 
       return {
-        date: format(day, 'EEE'),
+        date: format(day, "EEE"),
         calories: Math.round(calories),
         protein: Math.round(protein),
         carbs: Math.round(carbs),
@@ -100,10 +123,18 @@ export default function Reports() {
 
     const totalDays = dailyData.filter((d) => d.calories > 0).length || 1;
     setWeeklyStats({
-      avgCalories: Math.round(dailyData.reduce((sum, d) => sum + d.calories, 0) / totalDays),
-      avgProtein: Math.round(dailyData.reduce((sum, d) => sum + d.protein, 0) / totalDays),
-      avgCarbs: Math.round(dailyData.reduce((sum, d) => sum + d.carbs, 0) / totalDays),
-      avgFats: Math.round(dailyData.reduce((sum, d) => sum + d.fats, 0) / totalDays),
+      avgCalories: Math.round(
+        dailyData.reduce((sum, d) => sum + d.calories, 0) / totalDays,
+      ),
+      avgProtein: Math.round(
+        dailyData.reduce((sum, d) => sum + d.protein, 0) / totalDays,
+      ),
+      avgCarbs: Math.round(
+        dailyData.reduce((sum, d) => sum + d.carbs, 0) / totalDays,
+      ),
+      avgFats: Math.round(
+        dailyData.reduce((sum, d) => sum + d.fats, 0) / totalDays,
+      ),
     });
   };
 
@@ -116,57 +147,96 @@ export default function Reports() {
       const weekKey = `Week ${weekNum}`;
 
       if (!weeklyData[weekKey]) {
-        weeklyData[weekKey] = { calories: 0, protein: 0, carbs: 0, fats: 0, count: 0 };
+        weeklyData[weekKey] = {
+          calories: 0,
+          protein: 0,
+          carbs: 0,
+          fats: 0,
+          count: 0,
+        };
       }
 
       const dayLogs = logs.filter((log) => {
         const logDate = new Date(log.logged_at);
-        return format(logDate, 'yyyy-MM-dd') === format(day, 'yyyy-MM-dd');
+        return format(logDate, "yyyy-MM-dd") === format(day, "yyyy-MM-dd");
       });
 
       if (dayLogs.length > 0) {
-        weeklyData[weekKey].calories += dayLogs.reduce((sum, log) => sum + (log.calories || 0), 0);
-        weeklyData[weekKey].protein += dayLogs.reduce((sum, log) => sum + (log.protein || 0), 0);
-        weeklyData[weekKey].carbs += dayLogs.reduce((sum, log) => sum + (log.carbs || 0), 0);
-        weeklyData[weekKey].fats += dayLogs.reduce((sum, log) => sum + (log.fats || 0), 0);
+        weeklyData[weekKey].calories += dayLogs.reduce(
+          (sum, log) => sum + (log.calories || 0),
+          0,
+        );
+        weeklyData[weekKey].protein += dayLogs.reduce(
+          (sum, log) => sum + (log.protein || 0),
+          0,
+        );
+        weeklyData[weekKey].carbs += dayLogs.reduce(
+          (sum, log) => sum + (log.carbs || 0),
+          0,
+        );
+        weeklyData[weekKey].fats += dayLogs.reduce(
+          (sum, log) => sum + (log.fats || 0),
+          0,
+        );
         weeklyData[weekKey].count++;
       }
     });
 
     const chartData = Object.keys(weeklyData).map((week) => ({
       week,
-      calories: Math.round(weeklyData[week].calories / (weeklyData[week].count || 1)),
-      protein: Math.round(weeklyData[week].protein / (weeklyData[week].count || 1)),
+      calories: Math.round(
+        weeklyData[week].calories / (weeklyData[week].count || 1),
+      ),
+      protein: Math.round(
+        weeklyData[week].protein / (weeklyData[week].count || 1),
+      ),
       carbs: Math.round(weeklyData[week].carbs / (weeklyData[week].count || 1)),
       fats: Math.round(weeklyData[week].fats / (weeklyData[week].count || 1)),
     }));
 
     setMonthlyData(chartData);
 
-    const daysWithData = logs.length > 0 ? new Set(logs.map((log) => format(new Date(log.logged_at), 'yyyy-MM-dd'))).size : 1;
+    const daysWithData =
+      logs.length > 0
+        ? new Set(
+            logs.map((log) => format(new Date(log.logged_at), "yyyy-MM-dd")),
+          ).size
+        : 1;
     setMonthlyStats({
-      avgCalories: Math.round(logs.reduce((sum, log) => sum + (log.calories || 0), 0) / daysWithData),
-      avgProtein: Math.round(logs.reduce((sum, log) => sum + (log.protein || 0), 0) / daysWithData),
-      avgCarbs: Math.round(logs.reduce((sum, log) => sum + (log.carbs || 0), 0) / daysWithData),
-      avgFats: Math.round(logs.reduce((sum, log) => sum + (log.fats || 0), 0) / daysWithData),
+      avgCalories: Math.round(
+        logs.reduce((sum, log) => sum + (log.calories || 0), 0) / daysWithData,
+      ),
+      avgProtein: Math.round(
+        logs.reduce((sum, log) => sum + (log.protein || 0), 0) / daysWithData,
+      ),
+      avgCarbs: Math.round(
+        logs.reduce((sum, log) => sum + (log.carbs || 0), 0) / daysWithData,
+      ),
+      avgFats: Math.round(
+        logs.reduce((sum, log) => sum + (log.fats || 0), 0) / daysWithData,
+      ),
     });
   };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-gray-600 dark:text-gray-400">Loading reports...</div>
+        <div className="text-gray-600 dark:text-gray-400">
+          Loading reports...
+        </div>
       </div>
     );
   }
 
-  const stats = view === 'week' ? weeklyStats : monthlyStats;
-  const chartData = view === 'week' ? weeklyData : monthlyData;
+  const stats = view === "week" ? weeklyStats : monthlyStats;
+  const chartData = view === "week" ? weeklyData : monthlyData;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Nutrition Reports</h1>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          Nutrition Reports
+        </h1>
         <p className="text-gray-600 dark:text-gray-400 mt-1">
           Track your progress and improve your nutrition
         </p>
@@ -174,21 +244,21 @@ export default function Reports() {
 
       <div className="mb-6 flex gap-4">
         <button
-          onClick={() => setView('week')}
+          onClick={() => setView("week")}
           className={`px-6 py-2 rounded-lg font-medium transition-colors ${
-            view === 'week'
-              ? 'bg-indigo-600 text-white'
-              : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+            view === "week"
+              ? "bg-indigo-600 text-white"
+              : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
           }`}
         >
           Weekly
         </button>
         <button
-          onClick={() => setView('month')}
+          onClick={() => setView("month")}
           className={`px-6 py-2 rounded-lg font-medium transition-colors ${
-            view === 'month'
-              ? 'bg-indigo-600 text-white'
-              : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+            view === "month"
+              ? "bg-indigo-600 text-white"
+              : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
           }`}
         >
           Monthly
@@ -197,35 +267,51 @@ export default function Reports() {
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Avg Calories</h3>
+          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+            Avg Calories
+          </h3>
           <p className="mt-2 text-3xl font-semibold text-gray-900 dark:text-white">
             {stats.avgCalories}
           </p>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">per day</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            per day
+          </p>
         </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Avg Protein</h3>
+          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+            Avg Protein
+          </h3>
           <p className="mt-2 text-3xl font-semibold text-indigo-600 dark:text-indigo-400">
             {stats.avgProtein}g
           </p>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">per day</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            per day
+          </p>
         </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Avg Carbs</h3>
+          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+            Avg Carbs
+          </h3>
           <p className="mt-2 text-3xl font-semibold text-green-600 dark:text-green-400">
             {stats.avgCarbs}g
           </p>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">per day</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            per day
+          </p>
         </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Avg Fats</h3>
+          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+            Avg Fats
+          </h3>
           <p className="mt-2 text-3xl font-semibold text-yellow-600 dark:text-yellow-400">
             {stats.avgFats}g
           </p>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">per day</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            per day
+          </p>
         </div>
       </div>
 
@@ -236,18 +322,26 @@ export default function Reports() {
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-            <XAxis dataKey={view === 'week' ? 'date' : 'week'} stroke="#9CA3AF" />
+            <XAxis
+              dataKey={view === "week" ? "date" : "week"}
+              stroke="#9CA3AF"
+            />
             <YAxis stroke="#9CA3AF" />
             <Tooltip
               contentStyle={{
-                backgroundColor: '#1F2937',
-                border: 'none',
-                borderRadius: '8px',
-                color: '#F9FAFB',
+                backgroundColor: "#1F2937",
+                border: "none",
+                borderRadius: "8px",
+                color: "#F9FAFB",
               }}
             />
             <Legend />
-            <Line type="monotone" dataKey="calories" stroke="#6366F1" strokeWidth={2} />
+            <Line
+              type="monotone"
+              dataKey="calories"
+              stroke="#6366F1"
+              strokeWidth={2}
+            />
           </LineChart>
         </ResponsiveContainer>
       </div>
@@ -259,14 +353,17 @@ export default function Reports() {
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-            <XAxis dataKey={view === 'week' ? 'date' : 'week'} stroke="#9CA3AF" />
+            <XAxis
+              dataKey={view === "week" ? "date" : "week"}
+              stroke="#9CA3AF"
+            />
             <YAxis stroke="#9CA3AF" />
             <Tooltip
               contentStyle={{
-                backgroundColor: '#1F2937',
-                border: 'none',
-                borderRadius: '8px',
-                color: '#F9FAFB',
+                backgroundColor: "#1F2937",
+                border: "none",
+                borderRadius: "8px",
+                color: "#F9FAFB",
               }}
             />
             <Legend />
@@ -287,17 +384,19 @@ export default function Reports() {
               <ul className="list-disc list-inside space-y-1">
                 <li>
                   {stats.avgProtein < 50
-                    ? 'Consider increasing protein intake for better muscle recovery'
-                    : 'Great protein intake! Keep it up'}
+                    ? "Consider increasing protein intake for better muscle recovery"
+                    : "Great protein intake! Keep it up"}
                 </li>
                 <li>
                   {stats.avgCalories < 1200
-                    ? 'Your calorie intake seems low. Consider eating more to meet your nutritional needs'
+                    ? "Your calorie intake seems low. Consider eating more to meet your nutritional needs"
                     : stats.avgCalories > 3000
-                    ? 'Your calorie intake is quite high. Review your portions if trying to lose weight'
-                    : 'Your calorie intake looks balanced'}
+                      ? "Your calorie intake is quite high. Review your portions if trying to lose weight"
+                      : "Your calorie intake looks balanced"}
                 </li>
-                <li>Try to maintain consistency in your daily nutrition tracking</li>
+                <li>
+                  Try to maintain consistency in your daily nutrition tracking
+                </li>
               </ul>
             </div>
           </div>

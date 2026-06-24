@@ -1,64 +1,64 @@
-import { useState } from 'react';
-import { useAuth } from '../contexts/AuthContext';
-import { supabase } from '../lib/supabase';
-import { searchFoods } from '../lib/nutritionix';
-import { MealType } from '../types';
-import { useNavigate } from 'react-router-dom';
+import { useState } from "react";
+import { useAuth } from "../contexts/AuthContext";
+import { supabase } from "../lib/supabase";
+import { searchFoods } from "../lib/nutritionix";
+import type { MealType } from "../types";
+import { useNavigate } from "react-router-dom";
 
 export default function ImageUpload() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string>('');
-  const [uploadedUrl, setUploadedUrl] = useState('');
-  const [foodName, setFoodName] = useState('');
+  const [preview, setPreview] = useState<string>("");
+  const [uploadedUrl, setUploadedUrl] = useState("");
+  const [foodName, setFoodName] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [selectedFood, setSelectedFood] = useState<any>(null);
   const [servings, setServings] = useState(1);
-  const [mealType, setMealType] = useState<MealType>('breakfast');
+  const [mealType, setMealType] = useState<MealType>("breakfast");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [step, setStep] = useState<'upload' | 'identify' | 'confirm'>('upload');
+  const [error, setError] = useState("");
+  const [step, setStep] = useState<"upload" | "identify" | "confirm">("upload");
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
-      setError('Please select an image file');
+    if (!file.type.startsWith("image/")) {
+      setError("Please select an image file");
       return;
     }
 
     setSelectedFile(file);
     setPreview(URL.createObjectURL(file));
-    setError('');
+    setError("");
   };
 
   const handleUpload = async () => {
     if (!selectedFile || !user) return;
 
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
-      const fileExt = selectedFile.name.split('.').pop();
+      const fileExt = selectedFile.name.split(".").pop();
       const fileName = `${user.id}/${Date.now()}.${fileExt}`;
 
       const { data, error: uploadError } = await supabase.storage
-        .from('food-images')
+        .from("food-images")
         .upload(fileName, selectedFile);
 
       if (uploadError) throw uploadError;
 
       const {
         data: { publicUrl },
-      } = supabase.storage.from('food-images').getPublicUrl(fileName);
+      } = supabase.storage.from("food-images").getPublicUrl(fileName);
 
       setUploadedUrl(publicUrl);
-      setStep('identify');
+      setStep("identify");
     } catch (err: any) {
-      setError(err.message || 'Failed to upload image');
+      setError(err.message || "Failed to upload image");
     } finally {
       setLoading(false);
     }
@@ -68,13 +68,13 @@ export default function ImageUpload() {
     if (!foodName.trim()) return;
 
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
       const results = await searchFoods(foodName);
       setSearchResults(results);
     } catch (err: any) {
-      setError('Failed to search foods');
+      setError("Failed to search foods");
     } finally {
       setLoading(false);
     }
@@ -82,17 +82,17 @@ export default function ImageUpload() {
 
   const handleSelectFood = (food: any) => {
     setSelectedFood(food);
-    setStep('confirm');
+    setStep("confirm");
   };
 
   const handleSubmit = async () => {
     if (!user || !selectedFood) return;
 
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
-      const { error: logError } = await supabase.from('food_logs').insert({
+      const { error: logError } = await supabase.from("food_logs").insert({
         user_id: user.id,
         food_name: selectedFood.food_name,
         meal_type: mealType,
@@ -109,9 +109,9 @@ export default function ImageUpload() {
 
       if (logError) throw logError;
 
-      navigate('/');
+      navigate("/");
     } catch (err: any) {
-      setError(err.message || 'Failed to log food');
+      setError(err.message || "Failed to log food");
     } finally {
       setLoading(false);
     }
@@ -125,7 +125,7 @@ export default function ImageUpload() {
         </div>
       )}
 
-      {step === 'upload' && (
+      {step === "upload" && (
         <div>
           <div className="flex items-center justify-center w-full">
             <label
@@ -134,7 +134,11 @@ export default function ImageUpload() {
             >
               <div className="flex flex-col items-center justify-center pt-5 pb-6">
                 {preview ? (
-                  <img src={preview} alt="Preview" className="max-h-48 rounded" />
+                  <img
+                    src={preview}
+                    alt="Preview"
+                    className="max-h-48 rounded"
+                  />
                 ) : (
                   <>
                     <svg
@@ -151,7 +155,8 @@ export default function ImageUpload() {
                       />
                     </svg>
                     <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                      <span className="font-semibold">Click to upload</span> or drag and drop
+                      <span className="font-semibold">Click to upload</span> or
+                      drag and drop
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
                       PNG, JPG or JPEG (MAX. 10MB)
@@ -175,17 +180,21 @@ export default function ImageUpload() {
               disabled={loading}
               className="w-full mt-4 py-3 px-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 font-medium"
             >
-              {loading ? 'Uploading...' : 'Upload Image'}
+              {loading ? "Uploading..." : "Upload Image"}
             </button>
           )}
         </div>
       )}
 
-      {step === 'identify' && (
+      {step === "identify" && (
         <div>
           {preview && (
             <div className="mb-4">
-              <img src={preview} alt="Uploaded food" className="w-full h-48 object-cover rounded-lg" />
+              <img
+                src={preview}
+                alt="Uploaded food"
+                className="w-full h-48 object-cover rounded-lg"
+              />
             </div>
           )}
 
@@ -199,7 +208,7 @@ export default function ImageUpload() {
                   type="text"
                   value={foodName}
                   onChange={(e) => setFoodName(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                  onKeyPress={(e) => e.key === "Enter" && handleSearch()}
                   placeholder="e.g., chicken salad, pizza..."
                   className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
                 />
@@ -208,14 +217,16 @@ export default function ImageUpload() {
                   disabled={loading}
                   className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50"
                 >
-                  {loading ? 'Searching...' : 'Search'}
+                  {loading ? "Searching..." : "Search"}
                 </button>
               </div>
             </div>
 
             {searchResults.length > 0 && (
               <div className="space-y-2">
-                <h3 className="font-medium text-gray-900 dark:text-white">Select the food:</h3>
+                <h3 className="font-medium text-gray-900 dark:text-white">
+                  Select the food:
+                </h3>
                 <div className="max-h-64 overflow-y-auto space-y-2">
                   {searchResults.map((food, idx) => (
                     <button
@@ -225,9 +236,13 @@ export default function ImageUpload() {
                     >
                       <div className="flex justify-between">
                         <div>
-                          <p className="font-medium text-gray-900 dark:text-white">{food.food_name}</p>
+                          <p className="font-medium text-gray-900 dark:text-white">
+                            {food.food_name}
+                          </p>
                           {food.brand_name && (
-                            <p className="text-sm text-gray-500 dark:text-gray-400">{food.brand_name}</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                              {food.brand_name}
+                            </p>
                           )}
                         </div>
                         {food.nf_calories && (
@@ -245,11 +260,15 @@ export default function ImageUpload() {
         </div>
       )}
 
-      {step === 'confirm' && selectedFood && (
+      {step === "confirm" && selectedFood && (
         <div className="space-y-6">
           {preview && (
             <div className="mb-4">
-              <img src={preview} alt="Uploaded food" className="w-full h-48 object-cover rounded-lg" />
+              <img
+                src={preview}
+                alt="Uploaded food"
+                className="w-full h-48 object-cover rounded-lg"
+              />
             </div>
           )}
 
@@ -273,7 +292,10 @@ export default function ImageUpload() {
               <div>
                 <p className="text-gray-500 dark:text-gray-400">Carbs</p>
                 <p className="font-semibold text-gray-900 dark:text-white">
-                  {Math.round((selectedFood.nf_total_carbohydrate || 0) * servings)}g
+                  {Math.round(
+                    (selectedFood.nf_total_carbohydrate || 0) * servings,
+                  )}
+                  g
                 </p>
               </div>
               <div>
@@ -317,7 +339,7 @@ export default function ImageUpload() {
 
           <div className="flex gap-3">
             <button
-              onClick={() => setStep('identify')}
+              onClick={() => setStep("identify")}
               className="flex-1 py-3 px-4 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 font-medium"
             >
               Back
@@ -327,7 +349,7 @@ export default function ImageUpload() {
               disabled={loading}
               className="flex-1 py-3 px-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 font-medium"
             >
-              {loading ? 'Logging...' : 'Log Food'}
+              {loading ? "Logging..." : "Log Food"}
             </button>
           </div>
         </div>

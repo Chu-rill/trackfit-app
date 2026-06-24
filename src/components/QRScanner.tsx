@@ -1,22 +1,22 @@
-import { useState, useEffect } from 'react';
-import { Html5QrcodeScanner } from 'html5-qrcode';
-import { useAuth } from '../contexts/AuthContext';
-import { supabase } from '../lib/supabase';
-import { searchByBarcode } from '../lib/nutritionix';
-import { MealType } from '../types';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from "react";
+import { Html5QrcodeScanner } from "html5-qrcode";
+import { useAuth } from "../contexts/AuthContext";
+import { supabase } from "../lib/supabase";
+import { searchByBarcode } from "../lib/nutritionix";
+import type { MealType } from "../types";
+import { useNavigate } from "react-router-dom";
 
 export default function QRScanner() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
   const [scanning, setScanning] = useState(false);
-  const [scannedCode, setScannedCode] = useState('');
+  const [scannedCode, setScannedCode] = useState("");
   const [selectedFood, setSelectedFood] = useState<any>(null);
   const [servings, setServings] = useState(1);
-  const [mealType, setMealType] = useState<MealType>('breakfast');
+  const [mealType, setMealType] = useState<MealType>("breakfast");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [scanner, setScanner] = useState<Html5QrcodeScanner | null>(null);
 
   useEffect(() => {
@@ -29,15 +29,15 @@ export default function QRScanner() {
 
   const startScanning = () => {
     setScanning(true);
-    setError('');
+    setError("");
 
     const html5QrcodeScanner = new Html5QrcodeScanner(
-      'qr-reader',
+      "qr-reader",
       {
         fps: 10,
         qrbox: { width: 250, height: 250 },
       },
-      false
+      false,
     );
 
     html5QrcodeScanner.render(
@@ -52,14 +52,16 @@ export default function QRScanner() {
           const food = await searchByBarcode(decodedText);
           setSelectedFood(food);
         } catch (err: any) {
-          setError('Food not found for this barcode. Try entering it manually.');
+          setError(
+            "Food not found for this barcode. Try entering it manually.",
+          );
         } finally {
           setLoading(false);
         }
       },
       (errorMessage) => {
         // Scanner errors are normal, just ignore
-      }
+      },
     );
 
     setScanner(html5QrcodeScanner);
@@ -77,13 +79,13 @@ export default function QRScanner() {
     if (!scannedCode.trim()) return;
 
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
       const food = await searchByBarcode(scannedCode);
       setSelectedFood(food);
     } catch (err: any) {
-      setError('Food not found for this barcode');
+      setError("Food not found for this barcode");
     } finally {
       setLoading(false);
     }
@@ -93,10 +95,10 @@ export default function QRScanner() {
     if (!user || !selectedFood) return;
 
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
-      const { error: logError } = await supabase.from('food_logs').insert({
+      const { error: logError } = await supabase.from("food_logs").insert({
         user_id: user.id,
         food_name: selectedFood.food_name,
         meal_type: mealType,
@@ -112,9 +114,9 @@ export default function QRScanner() {
 
       if (logError) throw logError;
 
-      navigate('/');
+      navigate("/");
     } catch (err: any) {
-      setError(err.message || 'Failed to log food');
+      setError(err.message || "Failed to log food");
     } finally {
       setLoading(false);
     }
@@ -136,7 +138,9 @@ export default function QRScanner() {
               className="w-full py-12 px-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-indigo-500 dark:hover:border-indigo-400 transition-colors"
             >
               <div className="text-6xl mb-4">📱</div>
-              <p className="text-lg font-medium text-gray-900 dark:text-white">Scan QR/Barcode</p>
+              <p className="text-lg font-medium text-gray-900 dark:text-white">
+                Scan QR/Barcode
+              </p>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                 Scan the barcode on your food packaging
               </p>
@@ -171,7 +175,7 @@ export default function QRScanner() {
                 disabled={loading}
                 className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50"
               >
-                {loading ? 'Searching...' : 'Search'}
+                {loading ? "Searching..." : "Search"}
               </button>
             </div>
           </div>
@@ -217,7 +221,10 @@ export default function QRScanner() {
               <div>
                 <p className="text-gray-500 dark:text-gray-400">Carbs</p>
                 <p className="font-semibold text-gray-900 dark:text-white">
-                  {Math.round((selectedFood.nf_total_carbohydrate || 0) * servings)}g
+                  {Math.round(
+                    (selectedFood.nf_total_carbohydrate || 0) * servings,
+                  )}
+                  g
                 </p>
               </div>
               <div>
@@ -230,7 +237,7 @@ export default function QRScanner() {
             <button
               onClick={() => {
                 setSelectedFood(null);
-                setScannedCode('');
+                setScannedCode("");
               }}
               className="mt-3 text-sm text-indigo-600 dark:text-indigo-400 hover:underline"
             >
@@ -273,7 +280,7 @@ export default function QRScanner() {
             disabled={loading}
             className="w-full py-3 px-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 font-medium"
           >
-            {loading ? 'Logging...' : 'Log Food'}
+            {loading ? "Logging..." : "Log Food"}
           </button>
         </div>
       )}

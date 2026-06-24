@@ -99,6 +99,59 @@ export interface FoodLog {
   created_at: string;
 }
 
+// Calorie API response types
+export interface CalorieAPIFood {
+  id: number;
+  name: string;
+  brand?: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  fiber?: number;
+  sugars?: number;
+  sodium?: number;
+  saturated_fat?: number;
+  serving_qty?: number;
+  serving_unit?: string;
+  serving_weight_grams?: number;
+}
+
+export interface CalorieAPIBarcodeResponse {
+  barcode: string;
+  product: {
+    name: string;
+    brand?: string;
+    category?: string;
+  };
+  serving: {
+    label: string;
+    quantity: number;
+    unit: string;
+  };
+  nutrition_per_100g: {
+    energy_kcal: number;
+    protein_g: number;
+    carbohydrates_g: number;
+    fat_g: number;
+    fiber_g?: number;
+    sugars_g?: number;
+    sodium_g?: number;
+    saturated_fat_g?: number;
+  };
+  nutrition_per_serving?: {
+    energy_kcal: number;
+    protein_g: number;
+    carbohydrates_g: number;
+    fat_g: number;
+    fiber_g?: number;
+    sugars_g?: number;
+    sodium_g?: number;
+    saturated_fat_g?: number;
+  };
+}
+
+// Unified food interface for components (backwards compatible)
 export interface NutritionixFood {
   food_name: string;
   brand_name: string | null;

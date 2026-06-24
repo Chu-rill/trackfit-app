@@ -1,26 +1,28 @@
-import { useState, useRef, useCallback } from 'react';
-import Webcam from 'react-webcam';
-import { useAuth } from '../contexts/AuthContext';
-import { supabase } from '../lib/supabase';
-import { searchFoods } from '../lib/nutritionix';
-import { MealType } from '../types';
-import { useNavigate } from 'react-router-dom';
+import { useState, useRef, useCallback } from "react";
+import Webcam from "react-webcam";
+import { useAuth } from "../contexts/AuthContext";
+import { supabase } from "../lib/supabase";
+import { searchFoods } from "../lib/nutritionix";
+import type { MealType } from "../types";
+import { useNavigate } from "react-router-dom";
 
 export default function CameraCapture() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const webcamRef = useRef<Webcam>(null);
 
-  const [imageSrc, setImageSrc] = useState<string>('');
-  const [uploadedUrl, setUploadedUrl] = useState('');
-  const [foodName, setFoodName] = useState('');
+  const [imageSrc, setImageSrc] = useState<string>("");
+  const [uploadedUrl, setUploadedUrl] = useState("");
+  const [foodName, setFoodName] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [selectedFood, setSelectedFood] = useState<any>(null);
   const [servings, setServings] = useState(1);
-  const [mealType, setMealType] = useState<MealType>('breakfast');
+  const [mealType, setMealType] = useState<MealType>("breakfast");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [step, setStep] = useState<'capture' | 'identify' | 'confirm'>('capture');
+  const [error, setError] = useState("");
+  const [step, setStep] = useState<"capture" | "identify" | "confirm">(
+    "capture",
+  );
   const [showCamera, setShowCamera] = useState(false);
 
   const capture = useCallback(async () => {
@@ -30,32 +32,34 @@ export default function CameraCapture() {
     setImageSrc(imageSrc);
     setShowCamera(false);
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
-      if (!user) throw new Error('User not authenticated');
+      if (!user) throw new Error("User not authenticated");
 
       // Convert base64 to blob
       const response = await fetch(imageSrc);
       const blob = await response.blob();
-      const file = new File([blob], `${Date.now()}.jpg`, { type: 'image/jpeg' });
+      const file = new File([blob], `${Date.now()}.jpg`, {
+        type: "image/jpeg",
+      });
 
       const fileName = `${user.id}/${Date.now()}.jpg`;
 
       const { data, error: uploadError } = await supabase.storage
-        .from('food-images')
+        .from("food-images")
         .upload(fileName, file);
 
       if (uploadError) throw uploadError;
 
       const {
         data: { publicUrl },
-      } = supabase.storage.from('food-images').getPublicUrl(fileName);
+      } = supabase.storage.from("food-images").getPublicUrl(fileName);
 
       setUploadedUrl(publicUrl);
-      setStep('identify');
+      setStep("identify");
     } catch (err: any) {
-      setError(err.message || 'Failed to upload image');
+      setError(err.message || "Failed to upload image");
     } finally {
       setLoading(false);
     }
@@ -65,13 +69,13 @@ export default function CameraCapture() {
     if (!foodName.trim()) return;
 
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
       const results = await searchFoods(foodName);
       setSearchResults(results);
     } catch (err: any) {
-      setError('Failed to search foods');
+      setError("Failed to search foods");
     } finally {
       setLoading(false);
     }
@@ -79,17 +83,17 @@ export default function CameraCapture() {
 
   const handleSelectFood = (food: any) => {
     setSelectedFood(food);
-    setStep('confirm');
+    setStep("confirm");
   };
 
   const handleSubmit = async () => {
     if (!user || !selectedFood) return;
 
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
-      const { error: logError } = await supabase.from('food_logs').insert({
+      const { error: logError } = await supabase.from("food_logs").insert({
         user_id: user.id,
         food_name: selectedFood.food_name,
         meal_type: mealType,
@@ -106,19 +110,19 @@ export default function CameraCapture() {
 
       if (logError) throw logError;
 
-      navigate('/');
+      navigate("/");
     } catch (err: any) {
-      setError(err.message || 'Failed to log food');
+      setError(err.message || "Failed to log food");
     } finally {
       setLoading(false);
     }
   };
 
   const retakePhoto = () => {
-    setImageSrc('');
-    setUploadedUrl('');
+    setImageSrc("");
+    setUploadedUrl("");
     setShowCamera(true);
-    setStep('capture');
+    setStep("capture");
   };
 
   return (
@@ -129,7 +133,7 @@ export default function CameraCapture() {
         </div>
       )}
 
-      {step === 'capture' && (
+      {step === "capture" && (
         <div>
           {!showCamera && !imageSrc && (
             <div className="text-center">
@@ -138,7 +142,9 @@ export default function CameraCapture() {
                 className="w-full py-12 px-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-indigo-500 dark:hover:border-indigo-400 transition-colors"
               >
                 <div className="text-6xl mb-4">📷</div>
-                <p className="text-lg font-medium text-gray-900 dark:text-white">Open Camera</p>
+                <p className="text-lg font-medium text-gray-900 dark:text-white">
+                  Open Camera
+                </p>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                   Take a photo of your food
                 </p>
@@ -155,7 +161,7 @@ export default function CameraCapture() {
                   screenshotFormat="image/jpeg"
                   className="w-full"
                   videoConstraints={{
-                    facingMode: 'environment',
+                    facingMode: "environment",
                   }}
                 />
               </div>
@@ -171,7 +177,7 @@ export default function CameraCapture() {
                   disabled={loading}
                   className="flex-1 py-3 px-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 font-medium"
                 >
-                  {loading ? 'Processing...' : 'Capture Photo'}
+                  {loading ? "Processing..." : "Capture Photo"}
                 </button>
               </div>
             </div>
@@ -179,7 +185,11 @@ export default function CameraCapture() {
 
           {imageSrc && !showCamera && (
             <div>
-              <img src={imageSrc} alt="Captured" className="w-full rounded-lg mb-4" />
+              <img
+                src={imageSrc}
+                alt="Captured"
+                className="w-full rounded-lg mb-4"
+              />
               <button
                 onClick={retakePhoto}
                 className="w-full py-3 px-4 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 font-medium"
@@ -191,11 +201,15 @@ export default function CameraCapture() {
         </div>
       )}
 
-      {step === 'identify' && (
+      {step === "identify" && (
         <div>
           {imageSrc && (
             <div className="mb-4">
-              <img src={imageSrc} alt="Captured food" className="w-full h-48 object-cover rounded-lg" />
+              <img
+                src={imageSrc}
+                alt="Captured food"
+                className="w-full h-48 object-cover rounded-lg"
+              />
             </div>
           )}
 
@@ -209,7 +223,7 @@ export default function CameraCapture() {
                   type="text"
                   value={foodName}
                   onChange={(e) => setFoodName(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                  onKeyPress={(e) => e.key === "Enter" && handleSearch()}
                   placeholder="e.g., burger, salad..."
                   className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
                 />
@@ -218,14 +232,16 @@ export default function CameraCapture() {
                   disabled={loading}
                   className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50"
                 >
-                  {loading ? 'Searching...' : 'Search'}
+                  {loading ? "Searching..." : "Search"}
                 </button>
               </div>
             </div>
 
             {searchResults.length > 0 && (
               <div className="space-y-2">
-                <h3 className="font-medium text-gray-900 dark:text-white">Select the food:</h3>
+                <h3 className="font-medium text-gray-900 dark:text-white">
+                  Select the food:
+                </h3>
                 <div className="max-h-64 overflow-y-auto space-y-2">
                   {searchResults.map((food, idx) => (
                     <button
@@ -235,9 +251,13 @@ export default function CameraCapture() {
                     >
                       <div className="flex justify-between">
                         <div>
-                          <p className="font-medium text-gray-900 dark:text-white">{food.food_name}</p>
+                          <p className="font-medium text-gray-900 dark:text-white">
+                            {food.food_name}
+                          </p>
                           {food.brand_name && (
-                            <p className="text-sm text-gray-500 dark:text-gray-400">{food.brand_name}</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                              {food.brand_name}
+                            </p>
                           )}
                         </div>
                         {food.nf_calories && (
@@ -262,11 +282,15 @@ export default function CameraCapture() {
         </div>
       )}
 
-      {step === 'confirm' && selectedFood && (
+      {step === "confirm" && selectedFood && (
         <div className="space-y-6">
           {imageSrc && (
             <div className="mb-4">
-              <img src={imageSrc} alt="Captured food" className="w-full h-48 object-cover rounded-lg" />
+              <img
+                src={imageSrc}
+                alt="Captured food"
+                className="w-full h-48 object-cover rounded-lg"
+              />
             </div>
           )}
 
@@ -290,7 +314,10 @@ export default function CameraCapture() {
               <div>
                 <p className="text-gray-500 dark:text-gray-400">Carbs</p>
                 <p className="font-semibold text-gray-900 dark:text-white">
-                  {Math.round((selectedFood.nf_total_carbohydrate || 0) * servings)}g
+                  {Math.round(
+                    (selectedFood.nf_total_carbohydrate || 0) * servings,
+                  )}
+                  g
                 </p>
               </div>
               <div>
@@ -334,7 +361,7 @@ export default function CameraCapture() {
 
           <div className="flex gap-3">
             <button
-              onClick={() => setStep('identify')}
+              onClick={() => setStep("identify")}
               className="flex-1 py-3 px-4 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 font-medium"
             >
               Back
@@ -344,7 +371,7 @@ export default function CameraCapture() {
               disabled={loading}
               className="flex-1 py-3 px-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 font-medium"
             >
-              {loading ? 'Logging...' : 'Log Food'}
+              {loading ? "Logging..." : "Log Food"}
             </button>
           </div>
         </div>

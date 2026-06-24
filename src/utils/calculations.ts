@@ -1,4 +1,4 @@
-import { ActivityLevel, Gender, UnitPreference } from '../types';
+import type { ActivityLevel, Gender, UnitPreference } from "../types";
 
 // Activity level multipliers for maintenance calorie calculation
 export const ACTIVITY_MULTIPLIERS: Record<ActivityLevel, number> = {
@@ -56,7 +56,10 @@ export function calculateAge(dateOfBirth: string): number {
   let age = today.getFullYear() - birthDate.getFullYear();
   const monthDiff = today.getMonth() - birthDate.getMonth();
 
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+  if (
+    monthDiff < 0 ||
+    (monthDiff === 0 && today.getDate() < birthDate.getDate())
+  ) {
     age--;
   }
 
@@ -72,13 +75,13 @@ export function calculateBMR(
   weightKg: number,
   heightCm: number,
   age: number,
-  gender: Gender
+  gender: Gender,
 ): number {
   const baseBMR = 10 * weightKg + 6.25 * heightCm - 5 * age;
 
-  if (gender === 'male') {
+  if (gender === "male") {
     return Math.round(baseBMR + 5);
-  } else if (gender === 'female') {
+  } else if (gender === "female") {
     return Math.round(baseBMR - 161);
   } else {
     // For 'other', use average of male and female
@@ -95,7 +98,7 @@ export function calculateMaintenanceCalories(
   heightCm: number,
   age: number,
   gender: Gender,
-  activityLevel: ActivityLevel
+  activityLevel: ActivityLevel,
 ): number {
   const bmr = calculateBMR(weightKg, heightCm, age, gender);
   const multiplier = ACTIVITY_MULTIPLIERS[activityLevel];
@@ -108,11 +111,11 @@ export function calculateMaintenanceCalories(
 export function convertWeight(
   weight: number,
   from: UnitPreference,
-  to: UnitPreference
+  to: UnitPreference,
 ): number {
   if (from === to) return weight;
 
-  if (from === 'imperial' && to === 'metric') {
+  if (from === "imperial" && to === "metric") {
     return lbsToKg(weight);
   } else {
     return kgToLbs(weight);
@@ -125,11 +128,11 @@ export function convertWeight(
 export function convertHeight(
   height: number,
   from: UnitPreference,
-  to: UnitPreference
+  to: UnitPreference,
 ): number {
   if (from === to) return height;
 
-  if (from === 'imperial' && to === 'metric') {
+  if (from === "imperial" && to === "metric") {
     return inchesToCm(height);
   } else {
     return cmToInches(height);
@@ -141,14 +144,14 @@ export function convertHeight(
  */
 export function formatWeight(weight: number, unit: UnitPreference): string {
   const value = Math.round(weight * 10) / 10;
-  return `${value} ${unit === 'metric' ? 'kg' : 'lbs'}`;
+  return `${value} ${unit === "metric" ? "kg" : "lbs"}`;
 }
 
 /**
  * Format height with unit
  */
 export function formatHeight(height: number, unit: UnitPreference): string {
-  if (unit === 'metric') {
+  if (unit === "metric") {
     return `${Math.round(height)} cm`;
   } else {
     const totalInches = Math.round(height);
@@ -162,32 +165,35 @@ export function formatHeight(height: number, unit: UnitPreference): string {
  * Get BMI category
  */
 export function getBMICategory(bmi: number): string {
-  if (bmi < 18.5) return 'Underweight';
-  if (bmi < 25) return 'Normal weight';
-  if (bmi < 30) return 'Overweight';
-  return 'Obese';
+  if (bmi < 18.5) return "Underweight";
+  if (bmi < 25) return "Normal weight";
+  if (bmi < 30) return "Overweight";
+  return "Obese";
 }
 
 /**
  * Calculate recommended macros based on goal
  */
-export function calculateMacros(calories: number, goalType: string): {
+export function calculateMacros(
+  calories: number,
+  goalType: string,
+): {
   protein: number;
   carbs: number;
   fats: number;
 } {
-  let proteinPercent = 0.30;
+  let proteinPercent = 0.3;
   let fatPercent = 0.25;
   let carbPercent = 0.45;
 
   // Adjust based on goal
-  if (goalType === 'build_muscle') {
+  if (goalType === "build_muscle") {
     proteinPercent = 0.35;
     fatPercent = 0.25;
-    carbPercent = 0.40;
-  } else if (goalType === 'lose_weight') {
+    carbPercent = 0.4;
+  } else if (goalType === "lose_weight") {
     proteinPercent = 0.35;
-    fatPercent = 0.30;
+    fatPercent = 0.3;
     carbPercent = 0.35;
   }
 

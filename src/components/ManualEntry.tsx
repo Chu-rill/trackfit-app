@@ -1,36 +1,36 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { supabase } from '../lib/supabase';
-import { searchFoods, getNutritionDetails } from '../lib/nutritionix';
-import { MealType } from '../types';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import { supabase } from "../lib/supabase";
+import { searchFoods, getNutritionDetails } from "../lib/nutritionix";
+import type { MealType } from "../types";
 
 export default function ManualEntry() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [searching, setSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [selectedFood, setSelectedFood] = useState<any>(null);
   const [servings, setServings] = useState(1);
-  const [mealType, setMealType] = useState<MealType>('breakfast');
-  const [notes, setNotes] = useState('');
+  const [mealType, setMealType] = useState<MealType>("breakfast");
+  const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
 
     setSearching(true);
-    setError('');
+    setError("");
 
     try {
       const results = await searchFoods(searchQuery);
       setSearchResults(results);
     } catch (err: any) {
-      setError('Failed to search foods. Please check your API credentials.');
+      setError("Failed to search foods. Please check your API credentials.");
     } finally {
       setSearching(false);
     }
@@ -38,14 +38,14 @@ export default function ManualEntry() {
 
   const handleSelectFood = async (food: any) => {
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
       const details = await getNutritionDetails(food.food_name);
       setSelectedFood(details);
       setSearchResults([]);
     } catch (err: any) {
-      setError('Failed to get food details');
+      setError("Failed to get food details");
     } finally {
       setLoading(false);
     }
@@ -56,10 +56,10 @@ export default function ManualEntry() {
     if (!user || !selectedFood) return;
 
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
-      const { error: logError } = await supabase.from('food_logs').insert({
+      const { error: logError } = await supabase.from("food_logs").insert({
         user_id: user.id,
         food_name: selectedFood.food_name,
         meal_type: mealType,
@@ -78,10 +78,10 @@ export default function ManualEntry() {
 
       setSuccess(true);
       setTimeout(() => {
-        navigate('/');
+        navigate("/");
       }, 1500);
     } catch (err: any) {
-      setError(err.message || 'Failed to log food');
+      setError(err.message || "Failed to log food");
     } finally {
       setLoading(false);
     }
@@ -94,7 +94,9 @@ export default function ManualEntry() {
         <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">
           Food Logged Successfully!
         </h3>
-        <p className="text-gray-600 dark:text-gray-400">Redirecting to dashboard...</p>
+        <p className="text-gray-600 dark:text-gray-400">
+          Redirecting to dashboard...
+        </p>
       </div>
     );
   }
@@ -117,7 +119,7 @@ export default function ManualEntry() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+              onKeyPress={(e) => e.key === "Enter" && handleSearch()}
               placeholder="e.g., chicken breast, apple, pasta..."
               className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
             />
@@ -126,13 +128,15 @@ export default function ManualEntry() {
               disabled={searching}
               className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50"
             >
-              {searching ? 'Searching...' : 'Search'}
+              {searching ? "Searching..." : "Search"}
             </button>
           </div>
 
           {searchResults.length > 0 && (
             <div className="mt-4 space-y-2">
-              <h3 className="font-medium text-gray-900 dark:text-white">Search Results:</h3>
+              <h3 className="font-medium text-gray-900 dark:text-white">
+                Search Results:
+              </h3>
               <div className="max-h-96 overflow-y-auto space-y-2">
                 {searchResults.map((food, idx) => (
                   <button
@@ -257,7 +261,7 @@ export default function ManualEntry() {
             disabled={loading}
             className="w-full py-3 px-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 font-medium"
           >
-            {loading ? 'Logging Food...' : 'Log Food'}
+            {loading ? "Logging Food..." : "Log Food"}
           </button>
         </form>
       )}

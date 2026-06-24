@@ -1,28 +1,34 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { supabase } from '../lib/supabase';
-import { Gender, ActivityLevel, UnitPreference } from '../types';
-import { calculateBMI, calculateMaintenanceCalories, calculateAge } from '../utils/calculations';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import { supabase } from "../lib/supabase";
+import type { Gender, ActivityLevel, UnitPreference } from "../types";
+import {
+  calculateBMI,
+  calculateMaintenanceCalories,
+  calculateAge,
+} from "../utils/calculations";
 
 export default function ProfileSetup() {
   const { user, updateProfile } = useAuth();
   const navigate = useNavigate();
 
-  const [dateOfBirth, setDateOfBirth] = useState('');
-  const [gender, setGender] = useState<Gender>('other');
-  const [unitPreference, setUnitPreference] = useState<UnitPreference>('metric');
-  const [weight, setWeight] = useState('');
-  const [height, setHeight] = useState('');
-  const [activityLevel, setActivityLevel] = useState<ActivityLevel>('moderately_active');
+  const [dateOfBirth, setDateOfBirth] = useState("");
+  const [gender, setGender] = useState<Gender>("other");
+  const [unitPreference, setUnitPreference] =
+    useState<UnitPreference>("metric");
+  const [weight, setWeight] = useState("");
+  const [height, setHeight] = useState("");
+  const [activityLevel, setActivityLevel] =
+    useState<ActivityLevel>("moderately_active");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
 
-    setError('');
+    setError("");
     setLoading(true);
 
     try {
@@ -43,11 +49,11 @@ export default function ProfileSetup() {
         heightNum,
         age,
         gender,
-        activityLevel
+        activityLevel,
       );
 
       // Insert body stats
-      const { error: statsError } = await supabase.from('body_stats').insert({
+      const { error: statsError } = await supabase.from("body_stats").insert({
         user_id: user.id,
         weight: weightNum,
         height: heightNum,
@@ -58,9 +64,9 @@ export default function ProfileSetup() {
 
       if (statsError) throw statsError;
 
-      navigate('/');
+      navigate("/");
     } catch (err: any) {
-      setError(err.message || 'Failed to save profile');
+      setError(err.message || "Failed to save profile");
     } finally {
       setLoading(false);
     }
@@ -119,7 +125,9 @@ export default function ProfileSetup() {
               </label>
               <select
                 value={unitPreference}
-                onChange={(e) => setUnitPreference(e.target.value as UnitPreference)}
+                onChange={(e) =>
+                  setUnitPreference(e.target.value as UnitPreference)
+                }
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
               >
                 <option value="metric">Metric (kg, cm)</option>
@@ -129,7 +137,7 @@ export default function ProfileSetup() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Weight ({unitPreference === 'metric' ? 'kg' : 'lbs'})
+                Weight ({unitPreference === "metric" ? "kg" : "lbs"})
               </label>
               <input
                 type="number"
@@ -138,13 +146,13 @@ export default function ProfileSetup() {
                 value={weight}
                 onChange={(e) => setWeight(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
-                placeholder={unitPreference === 'metric' ? '70' : '154'}
+                placeholder={unitPreference === "metric" ? "70" : "154"}
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Height ({unitPreference === 'metric' ? 'cm' : 'inches'})
+                Height ({unitPreference === "metric" ? "cm" : "inches"})
               </label>
               <input
                 type="number"
@@ -153,7 +161,7 @@ export default function ProfileSetup() {
                 value={height}
                 onChange={(e) => setHeight(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
-                placeholder={unitPreference === 'metric' ? '175' : '69'}
+                placeholder={unitPreference === "metric" ? "175" : "69"}
               />
             </div>
 
@@ -164,14 +172,24 @@ export default function ProfileSetup() {
               <select
                 required
                 value={activityLevel}
-                onChange={(e) => setActivityLevel(e.target.value as ActivityLevel)}
+                onChange={(e) =>
+                  setActivityLevel(e.target.value as ActivityLevel)
+                }
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
               >
-                <option value="sedentary">Sedentary (little or no exercise)</option>
-                <option value="lightly_active">Lightly Active (1-3 days/week)</option>
-                <option value="moderately_active">Moderately Active (3-5 days/week)</option>
+                <option value="sedentary">
+                  Sedentary (little or no exercise)
+                </option>
+                <option value="lightly_active">
+                  Lightly Active (1-3 days/week)
+                </option>
+                <option value="moderately_active">
+                  Moderately Active (3-5 days/week)
+                </option>
                 <option value="very_active">Very Active (6-7 days/week)</option>
-                <option value="extremely_active">Extremely Active (physical job + exercise)</option>
+                <option value="extremely_active">
+                  Extremely Active (physical job + exercise)
+                </option>
               </select>
             </div>
 
@@ -180,7 +198,7 @@ export default function ProfileSetup() {
               disabled={loading}
               className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {loading ? 'Saving...' : 'Complete Setup'}
+              {loading ? "Saving..." : "Complete Setup"}
             </button>
           </form>
         </div>

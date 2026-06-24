@@ -17,7 +17,7 @@ A comprehensive fitness and nutrition tracking application built with React, Typ
 - Activity level multipliers for accurate TDEE
 
 ### Food Logging (Multiple Methods)
-1. **Manual Entry**: Search Nutritionix food database and manually log meals
+1. **Manual Entry**: Search Calorie API food database and manually log meals
 2. **Image Upload**: Upload photos of meals, identify the food, and log nutrition
 3. **Camera Capture**: Take photos directly in the app to log meals
 4. **QR/Barcode Scanning**: Scan product barcodes for instant nutrition data
@@ -57,7 +57,7 @@ A comprehensive fitness and nutrition tracking application built with React, Typ
 - **UI Components**: Headless UI
 - **Routing**: React Router v6
 - **Backend**: Supabase (PostgreSQL, Auth, Storage)
-- **Food Database**: Nutritionix API
+- **Food Database**: Calorie API (BusyBody)
 - **Charts**: Recharts
 - **Camera**: react-webcam
 - **QR Scanning**: html5-qrcode
@@ -79,9 +79,10 @@ See [SETUP.md](./SETUP.md) for detailed setup instructions.
    ```
    VITE_SUPABASE_URL=your_supabase_url
    VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-   VITE_NUTRITIONIX_APP_ID=your_nutritionix_app_id
-   VITE_NUTRITIONIX_API_KEY=your_nutritionix_api_key
+   VITE_CALORIE_API_KEY=your_calorie_api_key
    ```
+
+   Get your Calorie API key at: https://calorieapi.com/auth/register
 
 3. Set up Supabase:
    - Create a new Supabase project

@@ -3,7 +3,7 @@
 ## Prerequisites
 - Node.js 18+ installed
 - A Supabase account (free tier is fine)
-- Nutritionix API account (free tier available)
+- Calorie API account (free tier available)
 
 ## 1. Supabase Setup
 
@@ -32,12 +32,12 @@
 3. Copy and paste the SQL schema from `supabase-schema.sql` (we'll create this next)
 4. Click **Run** to execute the schema
 
-## 2. Nutritionix API Setup
+## 2. Calorie API Setup
 
-1. Go to [developer.nutritionix.com](https://developer.nutritionix.com/)
-2. Sign up for a free account
-3. Create a new application
-4. Copy your **Application ID** and **API Key**
+1. Go to [calorieapi.com](https://calorieapi.com/auth/register)
+2. Sign up for a free account (no credit card required)
+3. Get your API key from the developer dashboard
+4. Copy your **API Key**
 
 ## 3. Environment Variables
 
@@ -50,8 +50,7 @@
    ```
    VITE_SUPABASE_URL=your_supabase_project_url
    VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-   VITE_NUTRITIONIX_APP_ID=your_nutritionix_app_id
-   VITE_NUTRITIONIX_API_KEY=your_nutritionix_api_key
+   VITE_CALORIE_API_KEY=your_calorie_api_key
    ```
 
 ## 4. Install Dependencies
