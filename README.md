@@ -1,6 +1,16 @@
 # TrackFit - Nutrition & Fitness Tracking App
 
-A comprehensive fitness and nutrition tracking application built with React, TypeScript, and Supabase. Similar to MyFitnessPal, TrackFit helps users track their meals, monitor nutrition, and achieve their fitness goals.
+A comprehensive fitness and nutrition tracking application built with React, TypeScript, NestJS, and PostgreSQL. Similar to MyFitnessPal, TrackFit helps users track their meals, monitor nutrition, and achieve their fitness goals.
+
+## Project Structure
+
+```
+trackfit-app/
+├── client/          # React + Vite frontend application
+├── server/          # NestJS backend API with Prisma
+├── .gitignore       # Root gitignore
+└── README.md        # This file
+```
 
 ## Features
 
@@ -51,18 +61,25 @@ A comprehensive fitness and nutrition tracking application built with React, Typ
 
 ## Tech Stack
 
-- **Frontend**: React 18 + TypeScript
+### Frontend (client/)
+- **Framework**: React 19 + TypeScript
 - **Build Tool**: Vite
 - **Styling**: Tailwind CSS
 - **UI Components**: Headless UI
-- **Routing**: React Router v6
-- **Backend**: Supabase (PostgreSQL, Auth, Storage)
-- **Food Database**: Calorie API (BusyBody)
+- **Routing**: React Router v7
 - **Charts**: Recharts
 - **Camera**: react-webcam
 - **QR Scanning**: html5-qrcode
 - **Date Handling**: date-fns
 - **Form Validation**: React Hook Form + Zod
+
+### Backend (server/)
+- **Framework**: NestJS
+- **Database**: PostgreSQL
+- **ORM**: Prisma
+- **Authentication**: JWT + Passport
+- **External API**: Calorie API (BusyBody) for food data
+- **Validation**: class-validator + class-transformer
 
 ## Setup Instructions
 
@@ -70,29 +87,73 @@ See [SETUP.md](./SETUP.md) for detailed setup instructions.
 
 ### Quick Start
 
-1. Install dependencies:
+#### Prerequisites
+- Node.js (v18 or higher)
+- PostgreSQL (v14 or higher)
+- npm or yarn
+
+#### Backend Setup
+
+1. Navigate to server directory:
+   ```bash
+   cd server
+   ```
+
+2. Install dependencies:
    ```bash
    npm install
    ```
 
-2. Create `.env` file with your credentials:
-   ```
-   VITE_SUPABASE_URL=your_supabase_url
-   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-   VITE_CALORIE_API_KEY=your_calorie_api_key
+3. Create `.env` file from example:
+   ```bash
+   cp .env.example .env
    ```
 
-   Get your Calorie API key at: https://calorieapi.com/auth/register
+4. Configure your `.env` file with:
+   - PostgreSQL DATABASE_URL
+   - JWT_SECRET for authentication
+   - CALORIE_API_KEY (get from https://calorieapi.com/auth/register)
 
-3. Set up Supabase:
-   - Create a new Supabase project
-   - Run the SQL from `supabase-schema.sql` in the SQL Editor
-   - Create a storage bucket named `food-images`
+5. Run Prisma migrations:
+   ```bash
+   npx prisma generate
+   npx prisma migrate dev
+   ```
 
-4. Run the development server:
+6. Start the development server:
+   ```bash
+   npm run start:dev
+   ```
+
+The API will be available at `http://localhost:3000/api`
+
+#### Frontend Setup
+
+1. Navigate to client directory:
+   ```bash
+   cd client
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Create `.env` file from example:
+   ```bash
+   cp .env.example .env
+   ```
+
+4. Configure your `.env` file with:
+   - VITE_API_URL (default: http://localhost:3000/api)
+   - Optional: VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY for file storage
+
+5. Run the development server:
    ```bash
    npm run dev
    ```
+
+The app will be available at `http://localhost:5173`
 
 ## Key Calculations
 

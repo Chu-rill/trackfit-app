@@ -1,0 +1,145 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  password      String
+  name          String
+  age           Int?
+  height        Float?   // in cm or inches
+  weight        Float?   // in kg or lbs
+  gender        String?  // male, female, other
+  activityLevel String?  // sedentary, light, moderate, active, very_active
+  goals         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  bodyStats    BodyStats[]
+  fitnessGoals FitnessGoal[]
+  foodLogs     FoodLog[]
+  foodImages   FoodImage[]
+
+  @@map("users")
+}
+
+model BodyStats {
+  id                  String   @id @default(uuid())
+  userId              String
+  weight              Float
+  height              Float
+  activityLevel       String   // sedentary, lightly_active, moderately_active, very_active, extremely_active
+  bmi                 Float?
+  maintenanceCalories Int?
+  measuredAt          DateTime @default(now())
+  createdAt           DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([measuredAt(sort: Desc)])
+  @@map("body_stats")
+}
+
+model FitnessGoal {
+  id            String   @id @default(uuid())
+  userId        String
+  goalType      String   // lose_weight, gain_weight, maintain_weight, build_muscle, general_fitness
+  targetWeight  Float?
+  targetCalories Int?
+  targetProtein Int?
+  targetCarbs   Int?
+  targetFats    Int?
+  startDate     DateTime @default(now())
+  targetDate    DateTime?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isActive])
+  @@map("fitness_goals")
+}
+
+model FoodItem {
+  id                 String   @id @default(uuid())
+  foodName           String
+  brandName          String?
+  servingSize        String?
+  servingUnit        String?
+  servingWeightGrams Float?
+  calories           Float
+  protein            Float?
+  carbs              Float?
+  fats               Float?
+  fiber              Float?
+  sugar              Float?
+  sodium             Float?
+  cholesterol        Float?
+  saturatedFat       Float?
+  nutritionixId      String?
+  barcode            String?
+  imageUrl           String?
+  createdAt          DateTime @default(now())
+
+  foodLogs FoodLog[]
+
+  @@index([barcode])
+  @@index([nutritionixId])
+  @@map("food_items")
+}
+
+model FoodLog {
+  id         String   @id @default(uuid())
+  userId     String
+  foodItemId String?
+  foodName   String
+  mealType   String?  // breakfast, lunch, dinner, snack
+  servings   Float    @default(1)
+  calories   Float
+  protein    Float    @default(0)
+  carbs      Float    @default(0)
+  fat        Float    @default(0)
+  fiber      Float?
+  sugar      Float?
+  sodium     Float?
+  imageUrl   String?
+  notes      String?
+  servingSize Float   @default(1)
+  servingUnit String  @default("serving")
+  loggedAt   DateTime @default(now())
+  createdAt  DateTime @default(now())
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  foodItem  FoodItem? @relation(fields: [foodItemId], references: [id])
+  foodImages FoodImage[]
+
+  @@index([userId])
+  @@index([loggedAt(sort: Desc)])
+  @@map("food_logs")
+}
+
+model FoodImage {
+  id          String   @id @default(uuid())
+  userId      String
+  foodLogId   String?
+  imageUrl    String
+  storagePath String
+  uploadedAt  DateTime @default(now())
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  foodLog FoodLog? @relation(fields: [foodLogId], references: [id], onDelete: Cascade)
+
+  @@map("food_images")
+}
