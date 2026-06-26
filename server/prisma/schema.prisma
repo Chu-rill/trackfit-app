@@ -1,35 +1,93 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "../generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
+// Better Auth required models
 model User {
   id            String   @id @default(uuid())
   email         String   @unique
-  password      String
+  emailVerified Boolean  @default(false)
   name          String
-  age           Int?
-  height        Float?   // in cm or inches
-  weight        Float?   // in kg or lbs
-  gender        String?  // male, female, other
-  activityLevel String?  // sedentary, light, moderate, active, very_active
-  goals         String?
+  image         String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
+  // Custom TrackFit fields
+  age           Int?
+  height        Float? // in cm or inches
+  weight        Float? // in kg or lbs
+  gender        String? // male, female, other
+  activityLevel String? // sedentary, light, moderate, active, very_active
+  goals         String?
+
+  // Relations
   bodyStats    BodyStats[]
   fitnessGoals FitnessGoal[]
   foodLogs     FoodLog[]
   foodImages   FoodImage[]
+  sessions     Session[]
+  accounts     Account[]
 
-  @@map("users")
+  @@index([email])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  expiresAt DateTime
+  token     String   @unique
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id @default(uuid())
+  accountId             String
+  providerId            String
+  userId                String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, accountId])
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id @default(uuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([identifier, value])
+  @@map("verification")
 }
 
 model BodyStats {
@@ -37,7 +95,7 @@ model BodyStats {
   userId              String
   weight              Float
   height              Float
-  activityLevel       String   // sedentary, lightly_active, moderately_active, very_active, extremely_active
+  activityLevel       String // sedentary, lightly_active, moderately_active, very_active, extremely_active
   bmi                 Float?
   maintenanceCalories Int?
   measuredAt          DateTime @default(now())
@@ -51,19 +109,19 @@ model BodyStats {
 }
 
 model FitnessGoal {
-  id            String   @id @default(uuid())
-  userId        String
-  goalType      String   // lose_weight, gain_weight, maintain_weight, build_muscle, general_fitness
-  targetWeight  Float?
+  id             String    @id @default(uuid())
+  userId         String
+  goalType       String // lose_weight, gain_weight, maintain_weight, build_muscle, general_fitness
+  targetWeight   Float?
   targetCalories Int?
-  targetProtein Int?
-  targetCarbs   Int?
-  targetFats    Int?
-  startDate     DateTime @default(now())
-  targetDate    DateTime?
-  isActive      Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  targetProtein  Int?
+  targetCarbs    Int?
+  targetFats     Int?
+  startDate      DateTime  @default(now())
+  targetDate     DateTime?
+  isActive       Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -101,28 +159,28 @@ model FoodItem {
 }
 
 model FoodLog {
-  id         String   @id @default(uuid())
-  userId     String
-  foodItemId String?
-  foodName   String
-  mealType   String?  // breakfast, lunch, dinner, snack
-  servings   Float    @default(1)
-  calories   Float
-  protein    Float    @default(0)
-  carbs      Float    @default(0)
-  fat        Float    @default(0)
-  fiber      Float?
-  sugar      Float?
-  sodium     Float?
-  imageUrl   String?
-  notes      String?
-  servingSize Float   @default(1)
-  servingUnit String  @default("serving")
-  loggedAt   DateTime @default(now())
-  createdAt  DateTime @default(now())
+  id          String   @id @default(uuid())
+  userId      String
+  foodItemId  String?
+  foodName    String
+  mealType    String? // breakfast, lunch, dinner, snack
+  servings    Float    @default(1)
+  calories    Float
+  protein     Float    @default(0)
+  carbs       Float    @default(0)
+  fat         Float    @default(0)
+  fiber       Float?
+  sugar       Float?
+  sodium      Float?
+  imageUrl    String?
+  notes       String?
+  servingSize Float    @default(1)
+  servingUnit String   @default("serving")
+  loggedAt    DateTime @default(now())
+  createdAt   DateTime @default(now())
 
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  foodItem  FoodItem? @relation(fields: [foodItemId], references: [id])
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  foodItem   FoodItem?   @relation(fields: [foodItemId], references: [id])
   foodImages FoodImage[]
 
   @@index([userId])

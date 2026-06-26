@@ -47,3 +47,4 @@ prisma/migrations/*
 !prisma/migrations/.gitkeep
 
 node_modules
+/generated/prisma

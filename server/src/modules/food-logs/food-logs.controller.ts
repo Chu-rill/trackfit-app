@@ -8,10 +8,10 @@ import {
   Param,
   Query,
   UseGuards,
-  Request,
 } from '@nestjs/common';
 import { FoodLogsService } from './food-logs.service';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { AuthGuard } from '../auth/guards/auth.guard';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { CreateFoodLogDto } from './dto/create-food-log.dto';
 import { UpdateFoodLogDto } from './dto/update-food-log.dto';
 
@@ -19,25 +19,25 @@ import { UpdateFoodLogDto } from './dto/update-food-log.dto';
 export class FoodLogsController {
   constructor(private readonly foodLogsService: FoodLogsService) {}
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(AuthGuard)
   @Post()
-  async create(@Request() req, @Body() createFoodLogDto: CreateFoodLogDto) {
-    return this.foodLogsService.create(req.user.id, createFoodLogDto);
+  async create(@CurrentUser() user: any, @Body() createFoodLogDto: CreateFoodLogDto) {
+    return this.foodLogsService.create(user.id, createFoodLogDto);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(AuthGuard)
   @Get()
-  async findAll(@Request() req, @Query('date') date?: string) {
-    return this.foodLogsService.findAll(req.user.id, date);
+  async findAll(@CurrentUser() user: any, @Query('date') date?: string) {
+    return this.foodLogsService.findAll(user.id, date);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(AuthGuard)
   @Get(':id')
   async findOne(@Param('id') id: string) {
     return this.foodLogsService.findOne(id);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(AuthGuard)
   @Put(':id')
   async update(
     @Param('id') id: string,
@@ -46,15 +46,15 @@ export class FoodLogsController {
     return this.foodLogsService.update(id, updateFoodLogDto);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(AuthGuard)
   @Delete(':id')
   async remove(@Param('id') id: string) {
     return this.foodLogsService.remove(id);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(AuthGuard)
   @Get('stats/summary')
-  async getStats(@Request() req, @Query('period') period: string = 'week') {
-    return this.foodLogsService.getStats(req.user.id, period);
+  async getStats(@CurrentUser() user: any, @Query('period') period: string = 'week') {
+    return this.foodLogsService.getStats(user.id, period);
   }
 }

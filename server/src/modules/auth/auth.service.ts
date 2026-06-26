@@ -1,71 +1,30 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcrypt';
-import { UsersService } from '../users/users.service';
-import { CreateUserDto } from '../users/dto/create-user.dto';
+import { Injectable } from '@nestjs/common';
+import { auth } from '../../lib/auth';
 
 @Injectable()
 export class AuthService {
-  constructor(
-    private usersService: UsersService,
-    private jwtService: JwtService,
-  ) {}
-
-  async validateUser(email: string, password: string): Promise<any> {
-    const user = await this.usersService.findByEmail(email);
-    if (user && await bcrypt.compare(password, user.password)) {
-      const { password, ...result } = user;
-      return result;
-    }
-    return null;
+  /**
+   * Get the Better Auth handler
+   * This is used to handle all authentication requests
+   */
+  getAuthHandler() {
+    return auth.handler;
   }
 
-  async signup(createUserDto: CreateUserDto) {
-    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
-    const user = await this.usersService.create({
-      ...createUserDto,
-      password: hashedPassword,
+  /**
+   * Get the Better Auth API
+   * Use this for server-side authentication operations
+   */
+  getAuthApi() {
+    return auth.api;
+  }
+
+  /**
+   * Verify session from request
+   */
+  async verifySession(request: Request) {
+    return await auth.api.getSession({
+      headers: request.headers as any,
     });
-
-    const { password, ...result } = user;
-    const tokens = await this.generateTokens(result);
-
-    return {
-      user: result,
-      ...tokens,
-    };
-  }
-
-  async login(user: any) {
-    const tokens = await this.generateTokens(user);
-    return {
-      user,
-      ...tokens,
-    };
-  }
-
-  async refresh(refreshToken: string) {
-    try {
-      const payload = this.jwtService.verify(refreshToken);
-      const user = await this.usersService.findOne(payload.sub);
-
-      if (!user) {
-        throw new UnauthorizedException('Invalid refresh token');
-      }
-
-      const { password, ...result } = user;
-      return this.generateTokens(result);
-    } catch (error) {
-      throw new UnauthorizedException('Invalid refresh token');
-    }
-  }
-
-  private async generateTokens(user: any) {
-    const payload = { email: user.email, sub: user.id };
-
-    return {
-      accessToken: this.jwtService.sign(payload),
-      refreshToken: this.jwtService.sign(payload, { expiresIn: '30d' }),
-    };
   }
 }
